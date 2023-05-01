@@ -9,17 +9,18 @@ public class EncoderAndDecoder {
     private ArrayList<Character> initialReferenceTableArray;
     private char offSetChar;
     private int offSetNum;
+    private Tables tables;
 
 
 
     public EncoderAndDecoder(char offSetChar){
 
-        this.initialReferenceTableArray = new ArrayList<>(createTable());
+
+        this.tables = new Tables();
+        this.initialReferenceTableArray = new ArrayList<>(tables.createTable());
         this.offSetChar = offSetChar;
         this.offSetNum = initialReferenceTableArray.indexOf(offSetChar);
-        this.shiftedReferenceTableArray = shiftReferenceTable(offSetNum);
-
-
+        this.shiftedReferenceTableArray = tables.shiftReferenceTable(offSetNum);
 
 
 
@@ -29,43 +30,7 @@ public class EncoderAndDecoder {
         this.shiftedReferenceTableArray = shiftedReferenceTableArray;
     }
 
-    private ArrayList<Character> createTable(){
 
-        ArrayList<Character> newTable = new ArrayList<>();
-
-        //        Create our own reference table using ASCII values
-
-        //  Add index 0 (A) to index 25 (Z) based on their ASCII values to the reference table
-        for(int i=65;i<= 90;i++){
-            newTable.add((char)i);
-        }
-
-        //  Add index 26 (0) to index 35 (9) based on their ASCII values to the reference table
-        for(int i=48;i<= 57;i++){
-            newTable.add((char)i);
-        }
-
-        //  Add index 36 (*) to index 43 (/) based on their ASCII values to the reference table
-        for(int i=42;i<= 47;i++){
-            newTable.add((char)i);
-        }
-
-        return newTable;
-    }
-
-    private ArrayList<Character> shiftReferenceTable(int count){
-
-        ArrayList<Character> referenceTable = createTable();
-        ArrayDeque<Character> shiftedReferenceTableQueue = new ArrayDeque<>(referenceTable);
-
-//      Rotate the queue to form the shifted table using offset char
-        for(int i=0;i<count;i++){
-            char popped = shiftedReferenceTableQueue.removeLast();
-            shiftedReferenceTableQueue.addFirst(popped);
-        }
-
-        return new ArrayList(shiftedReferenceTableQueue);
-    }
 
     public void printTable(){
         System.out.println("Initial Table : "+ initialReferenceTableArray);
@@ -77,18 +42,18 @@ public class EncoderAndDecoder {
     public String encode (String plainText){
 
 
-        String newText = "" + offSetChar;
+        StringBuilder newText = new StringBuilder("" + offSetChar);
 
         char[] plainTextArray = plainText.toCharArray();
 
         for(char character:plainTextArray){
             int currIndex = initialReferenceTableArray.indexOf(character);
             if (currIndex<0 || currIndex > initialReferenceTableArray.size()){
-                newText += character;
+                newText.append(character);
             }
             else{
                 char newChar = shiftedReferenceTableArray.get(currIndex);
-                newText += newChar;
+                newText.append(newChar);
             }
 
         }
@@ -109,12 +74,12 @@ public class EncoderAndDecoder {
 
 //      Create the shifted reference table
 
-        setShiftedReferenceTableArray(shiftReferenceTable(currOffSetNum));
+        setShiftedReferenceTableArray(tables.shiftReferenceTable(currOffSetNum));
 
 
 
 //      Add the chars from unshifted table to new text
-        String newText = "";
+        StringBuilder newText = new StringBuilder();
 
         char[] plainTextArray = encodedText.toCharArray();
 
@@ -122,11 +87,11 @@ public class EncoderAndDecoder {
         for(char character:plainTextArray){
             int currIndex = shiftedReferenceTableArray.indexOf(character);
             if (currIndex<0 || currIndex > initialReferenceTableArray.size()){
-                newText += character;
+                newText.append(character);
             }
             else{
                 char newChar = initialReferenceTableArray.get(currIndex);
-                newText += newChar;
+                newText.append(newChar);
             }
 
         }
